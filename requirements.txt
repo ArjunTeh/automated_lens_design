@@ -1,0 +1,12 @@
+ConfigArgParse==1.7
+jax[cuda12]>=0.5.3
+equinox==0.13.2
+jaxtyping>=0.3.3
+lineax>=0.0.8
+numpy>=2.3.4
+opencv_python==4.10.0.84
+optax>=0.2.6
+optimistix>=0.0.11
+pandas>=2.3.3
+plotly>=5.24.0
+tqdm>=4.66.5
