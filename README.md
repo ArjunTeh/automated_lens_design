@@ -1,5 +1,5 @@
 # Automated Compound Lens Design
-This is the code to accompany the paper [https://imaging.cs.cmu.edu/automated_lens_design/index.html][Automated design of compound lenses with discrete-continuous optimization]
+This is the code to accompany the paper [Automated design of compound lenses with discrete-continuous optimization](https://imaging.cs.cmu.edu/automated_lens_design/index.html)
 
 # Installation
 To install all the dependencies use
