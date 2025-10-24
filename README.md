@@ -6,6 +6,7 @@ To install all the dependencies use
 ```bash
 pip install -r requirements.txt
 ```
+We recommend using virtual environments since the code relies on some deprecated features of the dependent libraries.
 
 This codebase primarily relies on JAX and the equinox library for computation and plotly for plotting
 

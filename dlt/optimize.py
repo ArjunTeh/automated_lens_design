@@ -3,7 +3,6 @@ import jax.scipy.optimize as jop
 import jax
 import jax.experimental.checkify as checkify
 from tqdm import tqdm
-import jaxopt
 
 import equinox as eqx
 import optimistix as optx
@@ -35,63 +34,6 @@ def finite_difference(loss_fn, state, eps=1e-6):
         grad = grad.at[i].set((dx_loss - cur_loss) / eps)
 
     return grad.reshape(orig_shape)
-
-
-def run_lbfgs(loss_fn, state : jnp.ndarray , niters : int, box_bounds, show_progress=False):
-
-    box_bounds = (jnp.asarray(box_bounds[0]), jnp.asarray(box_bounds[1]))
-
-    init_params = jnp.asarray(state).ravel()
-    lm = jaxopt.LBFGSB(loss_fn, value_and_grad=True, 
-                       maxiter=niters, 
-                       has_aux=True, 
-                       stepsize=0.,
-                       maxls=40,
-                       verbose=True, 
-                       implicit_diff=False, 
-                       jit='auto', 
-                       unroll='auto')
-    opt_state = lm.init_state(init_params, bounds=box_bounds)
-
-    loss_hist = [opt_state.value]
-    state_hist = [init_params.reshape(state.shape)]
-    other_info_hist = [opt_state.aux]
-
-    update_fn = jax.jit(lm.update)
-    for i in tqdm(range(niters), disable=(not show_progress)):
-        result = update_fn(state_hist[-1].ravel(), opt_state, bounds=box_bounds)
-        state_hist.append(result.params.reshape(state.shape))
-        loss_hist.append(result.state.value)
-        other_info_hist.append(result.state.aux)
-        opt_state = result.state
-
-        if result.state.failed_linesearch:
-            print("failed linesearch at iter", i)
-            break
-
-    return loss_hist, state_hist, other_info_hist
-
-
-def run_LM_least_squares(loss_fn, state : jnp.ndarray , niters : int, show_progress=False):
-    def loss_mat_fn(p):
-        (loss, aux), grad = loss_fn(p)
-        return jnp.expand_dims(loss, axis=0), aux
-
-    init_params = state.copy().ravel()
-    lm = jaxopt.LevenbergMarquardt(loss_mat_fn, maxiter=niters, has_aux=True, verbose=True, implicit_diff=False, jit=False, unroll=False)
-    opt_state = lm.init_state(init_params)
-
-    loss_hist = [opt_state.loss]
-    state_hist = [init_params.reshape(state.shape)]
-    other_info_hist = [opt_state.aux]
-    for i in tqdm(range(niters), disable=(not show_progress)):
-        result = lm.update(state_hist[-1].ravel(), opt_state)
-        state_hist.append(result.params.copy().reshape(state.shape))
-        loss_hist.append(result.state.loss)
-        other_info_hist.append(result.state.aux)
-        opt_state = result.state
-
-    return loss_hist, state_hist, other_info_hist
 
 
 def run_adam_descent(loss_fn, state, niters, termination_eps=None, constraint=None, projector=None, eps=1e-3, rng_key=None, beta1=0.9, beta2=0.999, mo1=None, mo2=None, show_progress=False, save_cadence=1, logger=None):
